@@ -1,0 +1,17 @@
+<span>{{ selector }}</span>
+<span>"{{ text }}"</span>
+<b>{{ val }}</b><br>
+<form action="/track" method="post">
+  <input type="hidden" name="selector", value="{{ selector }}">
+  <input type="hidden" name="url", value="{{ url }}">
+  <label for="data_source_name">Data Source Name:</label>
+  <input type="text" id="data_source_name" name="data_source_name">
+  <label for="data_source_period_hrs">Update period in hours:</label>
+  <input type="text" id="data_source_period_hrs" name="data_source_period_hrs" value="24" size="1"><br>
+  <input type="submit" value="Track this number" style="background-color: #D47030;">
+</form>
+or 
+<button onClick="document.getElementById('preview').src='/click?'+(new Date().getTime());">
+	Click this element and continue
+</button>
+(useful for dismissing popups)

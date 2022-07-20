@@ -1,0 +1,90 @@
+<html>
+<head>
+	<title>Chart Anything - Submit a url</title>
+	<script type="application/javascript">
+
+function submitUrlForm() {
+    const url = document.getElementById("url-input").value;
+    let img_element = document.getElementById("preview");
+    document.getElementById("spinner").hidden = false
+    img_element.src = '/screenshot?url='+encodeURIComponent(url);
+}
+
+window.onload = function() {
+	// Add an event listener to the preview image that picks up the click location
+	document.getElementById('preview').addEventListener('click', function (e) {
+		const x = e.pageX - e.target.offsetLeft;
+		const y = e.pageY - e.target.offsetTop;
+		const url = document.getElementById("url-input").value;
+		// window.location.href = '/locate?x='+x+'&y='+y+'&url='+encodeURIComponent(url);
+
+		var http = new XMLHttpRequest();
+	    http.open("POST", "/locate", true);
+	    http.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+	    var params = 'x='+x+'&y='+y+'&url='+encodeURIComponent(url);
+	    http.send(params);
+	    http.onload = function() {
+	    	let rdiv = document.getElementById("results-div");
+	        rdiv.innerHTML = http.responseText;
+	    }
+	});
+};
+
+	</script>
+	<style>
+.loading {
+    display: flex;
+    justify-content: center;
+}
+
+.loading::after {
+    content: "";
+    width: 50px;
+    height: 50px;
+    border: 10px solid #dddddd;
+    border-top-color: #009579;
+    border-radius: 50%;
+    animation: loading 1s ease infinite;
+}
+
+@keyframes loading {
+    to {
+        transform: rotate(1turn);
+    }
+}
+	</style>
+</head>
+<body bgcolor="#EEEEEE">
+
+<form id="submiturl" onSubmit="submitUrlForm();" action="javascript:void(0);"
+      style="text-align:left;height:75px;background-color:#B45010;">
+	<input type="hidden" name="submitid" value="put_a_session_id_here?">
+	<div style="padding:5px;margin:0 20px;color:white;font-weight:bold;font-size:16px">Paste URL to start finding numerical data</div>
+	<div style="margin:0;padding:0;position:absolute;left:20px;right:140px">
+		<input id="url-input" style="padding:0px 2px;height:2em;width:100%;border:0" type="text" name="url" placeholder="http://www.domain.com/url" value="" tabindex="1">
+	</div>
+	<div style="margin:0;padding:0;position:absolute;width:100px;right:20px">
+		<input style="padding:4px;height:2em;width:100px" type="submit" value="load" tabindex="-1">
+	</div>
+</form>
+
+<p>
+	Chart Anything is a service that scrapes numerical values from a page and
+	saves as a time series that you can view in charts.
+</p>
+
+<div style="text-align:left;background-color:#29AC57;margin-bottom:10px;padding:10px;">
+	<div id="results-div" style="background-color:#FFFFFF;padding:10px;">
+		results
+	</div>
+</div>
+
+<div>
+	<div style="width: 150px; height: 150px;" id="spinner" hidden>
+	    <div class="loading loading--full-height"></div>
+	</div>
+	<img id='preview' onLoad="document.getElementById('spinner').hidden = true;">
+</div>
+
+</body>
+</html>

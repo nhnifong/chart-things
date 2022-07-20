@@ -1,0 +1,40 @@
+<html>
+<head>
+	<title>Chart Anything - {{ title }}</title>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script type="application/javascript">
+window.onload = function() {
+	const ctx = document.getElementById('myChart');
+	const myChart = new Chart(ctx, {
+	    type: 'scatter',
+	    data: {
+			datasets: [{
+				label: '{{ title }}',
+				data: [
+{{ datastring }}
+				],
+				backgroundColor: 'rgb(255, 99, 132)',
+				showLine: true
+			}],
+		},
+	    options: {
+	    	elements: {
+	    		pointStyle: 'circle'
+	    	},
+	        scales: {
+
+	        }
+	    }
+	});
+};
+	</script>
+	<style>
+
+	</style>
+</head>
+<body bgcolor="#EEEEEE">
+
+<canvas id="myChart" width="600" height="400"></canvas>
+
+</body>
+</html>
