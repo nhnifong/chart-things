@@ -26,6 +26,8 @@ FIREFOX_OPTS.log.level = "trace"    # Debug
 FIREFOX_OPTS.headless = True
 GECKODRIVER_LOG = '/geckodriver.log'
 
+SELECTOR_BUILDER_JS = open('selector_builder.js').read()
+
 class Scraper:
 
 	def __init__(self):
@@ -48,42 +50,15 @@ class Scraper:
 		time.sleep(6) # just in case
 		return self.DRIVER.get_screenshot_as_png()
 
-	def locate_element(self, link, x, y):
+	def locate_element(self, link, x, y, allow_id=True):
 		"""Find an element at the coordinates, and return a css selector for it"""
 		if self.url != link:
 			self.DRIVER.get(link)
 			self.url = link
 		self.x_click = x
 		self.y_click = y
-
-		result = self.DRIVER.execute_script("""
-// walk tree towards root, building selector, until selector selects only one thing.
-const getCssSelectorShort = (elem) => {
-  let el = elem;
-  let path = [], parent;
-  let selector = '';
-  while (parent = el.parentNode) {
-    let tag = el.tagName, siblings;
-    path.unshift(
-      el.id ? `#${el.id}` : (
-        siblings = parent.children,
-        [].filter.call(siblings, sibling => sibling.tagName === tag).length === 1 ? tag :
-        `${tag}:nth-child(${1+[].indexOf.call(siblings, el)})`
-      )
-    );
-    el = parent;
-
-    // Test it
-    selector = `${path.join(' > ')}`.toLowerCase();
-    const matches = document.querySelectorAll(selector);
-    if (matches.length === 1 && matches[0] === elem) {
-    	break;
-    }
-  };
-  return selector;
-};
-return getCssSelectorShort(document.elementFromPoint(%i, %i));
-""" % (x, y))
+		allow_id = int(allow_id)
+		result = self.DRIVER.execute_script(SELECTOR_BUILDER_JS % (allow_id, x, y))
 		self.selector = result
 		return result
 

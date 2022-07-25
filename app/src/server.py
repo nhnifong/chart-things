@@ -2,6 +2,7 @@ import io
 from flask import Flask, send_file, session, request, render_template
 import requests
 from random import random
+import peewee
 
 from scraper import Scraper, float_num_re
 from schema import Source, DataEntry, db
@@ -16,28 +17,28 @@ server = Flask(__name__)
 
 @server.route("/")
 def home():
-   return render_template('home.html')
+   # Select the top 3 most recently updated data entries 
+   lastentry = (DataEntry
+      .select(
+         DataEntry.source_id.alias('source_id'),
+         DataEntry.value.alias('recent_val'),
+         DataEntry.last_update.alias('last_update'))
+      .order_by(DataEntry.last_update.desc())
+      .group_by(DataEntry.source_id)
+      .limit(3)
+      .alias('last_entry'))
+   predicate = (Source.source_id == lastentry.c.source_id)
+   query = (Source
+      .select(
+         Source.source_id.alias('source_id'),
+         Source.title.alias('title'),
+         (lastentry.c.recent_val).alias('recent_val'),
+         (lastentry.c.last_update).alias('last_update'))
+      .join(lastentry, on=predicate))
 
-@server.route("/preview")
-def preview():
-   url = request.args.get('url', '')
-   return """
-<head>
-   <script type="application/javascript">
-window.onload = function() {
-   document.getElementById('preview').addEventListener('click', function (e) {
-      const x = e.pageX - e.target.offsetLeft;
-      const y = e.pageY - e.target.offsetTop;
-      console.log('clicked '+x+' '+y);
-      window.location.href = '/locate?x='+x+'&y='+y+'&url=%s';
-   });
-};
-   </script>
-</head>
-<body>
-   <img src='/screenshot?url=%s' id='preview'>
-</body>
-""" % (url, url)
+   featured = list(query.dicts()) # calling list forces this generator to be evaluated.
+
+   return render_template('home.html', featured=featured)
 
 @server.route('/screenshot')
 def screenshot():
@@ -56,7 +57,8 @@ def locate():
    url = request.form.get('url', '')
    x = int(request.form.get('x', 0))
    y = int(request.form.get('y', 0))
-   selector = scraper.locate_element(url, x, y)
+   allow_id = request.form.get('allow_id', 'true') == 'true'
+   selector = scraper.locate_element(url, x, y, allow_id)
    text = scraper.get_text_with_selector(url, selector)
    val = 'Cannot find a number'
    search = float_num_re.search(text)

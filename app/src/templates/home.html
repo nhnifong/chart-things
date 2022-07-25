@@ -7,6 +7,7 @@ function submitUrlForm() {
     const url = document.getElementById("url-input").value;
     let img_element = document.getElementById("preview");
     document.getElementById("spinner").hidden = false
+	document.getElementById("featured-series-div").hidden = true;
     img_element.src = '/screenshot?url='+encodeURIComponent(url);
 }
 
@@ -21,7 +22,12 @@ window.onload = function() {
 		var http = new XMLHttpRequest();
 	    http.open("POST", "/locate", true);
 	    http.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-	    var params = 'x='+x+'&y='+y+'&url='+encodeURIComponent(url);
+	    var params = (
+	    	'x='+x
+	    	+'&y='+y
+	    	+'&url='+encodeURIComponent(url)
+	    	+'&allow_id='+document.getElementById("allow-id").checked
+	    );
 	    http.send(params);
 	    http.onload = function() {
 	    	let rdiv = document.getElementById("results-div");
@@ -74,16 +80,27 @@ window.onload = function() {
 </p>
 
 <div style="text-align:left;background-color:#29AC57;margin-bottom:10px;padding:10px;">
+	<input type="checkbox" id="allow-id" checked> Allow ID use in selectors
 	<div id="results-div" style="background-color:#FFFFFF;padding:10px;">
 		results
 	</div>
 </div>
 
-<div>
+<div id="preview-div">
 	<div style="width: 150px; height: 150px;" id="spinner" hidden>
 	    <div class="loading loading--full-height"></div>
 	</div>
 	<img id='preview' onLoad="document.getElementById('spinner').hidden = true;">
+</div>
+
+<div id="featured-series-div">
+	<h2>Featured Series</h2>
+	{% for item in featured %}
+		<div>
+        	<a href="/chart/{{ item.source_id }}"><h3>{{ item.title }}</h3></a>
+        	Updated {{ item.last_update }} | <b>{{ item.recent_val }}</b>
+    	</div>
+    {% endfor %}
 </div>
 
 </body>

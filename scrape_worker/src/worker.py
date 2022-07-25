@@ -16,7 +16,7 @@ scraper = Scraper()
 def start():
    while True:
       work()
-      time.sleep(60)
+      time.sleep(600) # work every 10 minutes
 
 def work():
    db.connect()
